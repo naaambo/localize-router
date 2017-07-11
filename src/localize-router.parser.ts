@@ -60,6 +60,8 @@ export abstract class LocalizeParser {
   protected init(routes: Routes): Promise<any> {
     let selectedLanguage: string;
     let wildcardRoute: Route;
+    let ignoredRouteIndex: number[] = [];
+    let ignoredRoutes: Route[] = [];
 
     this.routes = routes;
 
@@ -77,8 +79,33 @@ export abstract class LocalizeParser {
 
     /** extract potential wildcard route */
     let wildcardIndex = routes.findIndex((route: Route) => route.path === '**');
+
     if (wildcardIndex !== -1) {
       wildcardRoute = routes.splice(wildcardIndex, 1)[0];
+    }
+	
+    routes.forEach( (val, index) => {
+      let match = val.path.match("[*][a-z]*[*]");
+
+      if(match) {
+        ignoredRouteIndex.push(index);
+      }
+
+    });
+
+    if (wildcardIndex !== -1) {
+      wildcardRoute = routes.splice(wildcardIndex, 1)[0];
+    }
+
+    if(ignoredRouteIndex.length > 0) {
+
+      ignoredRouteIndex.forEach( (val) => {
+        let route = routes.splice(val,1)[0];
+        let replaced = route.path.replace(/[*]/g, "");
+        route.path = replaced;
+        ignoredRoutes.push(route);
+      });
+
     }
 
     /** mutable operation on routes */
@@ -90,6 +117,15 @@ export abstract class LocalizeParser {
     /** ...and potential wildcard route */
     if (wildcardRoute) {
       this.routes.push(wildcardRoute);
+    }
+
+    if(ignoredRoutes.length > 0) {
+      ignoredRoutes.forEach( (val) => {
+        
+        this.routes.push(val);
+    });
+
+      this.routes.concat(ignoredRoutes);
     }
 
     /** translate routes */
