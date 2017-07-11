@@ -1,5 +1,5 @@
 {
-  "name": "localize-router-ignoreroutes",
+  "name": "localize-router",
   "version": "0.7.0",
   "description": "An implementation of routes localization for Angular 2",
   "scripts": {
